@@ -1,0 +1,16 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Clean and Build DMG",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-c", "rm -rf dist/ build/ && ./build_dmg.sh"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
