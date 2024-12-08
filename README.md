@@ -8,10 +8,15 @@ No more hunting for hidden windows. **Click2Hide** automatically hide/un-minimiz
 
 ## Installation
 
-1. Open the application and grant the necessary accessibility and automation permissions when prompted.
-2. If accidentally denied, you can change the permissions via the app's menubar menu.
+1. Download the latest version of Click2Hide from the [Releases](https://github.com/victorwon/click2hide/releases) page.
+2. Open the application and grant the necessary accessibility and automation permissions when prompted.
+3. If accidentally denied, you can change the permissions via the app's menubar menu.
 
 ## Usage
 
 - **Hide Applications**: Simply click on the Dock icon of the application you wish to hide.
 - **Unhide Applications**: If the application is already hidden, clicking its Dock icon will unhide it.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. For more information, visit the [Open Source Initiative](https://opensource.org/licenses/MIT).
