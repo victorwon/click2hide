@@ -11,7 +11,7 @@ No more hunting for hidden windows on your Mac. **Click2Hide** automatically hid
 ## Installation
 
 1. Download the latest version of Click2Hide from the [Releases](https://github.com/victorwon/click2hide/releases) page.
-2. Open the application and grant the necessary accessibility and automation permissions when prompted.
+2. Open the application and click on the menubar icon to grant **BOTH** the necessary accessibility and automation permissions.
 3. If accidentally denied, you can change the permissions via the app's menubar menu.
 
 ## Usage
