@@ -338,7 +338,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             if let releaseInfo = try? JSONDecoder().decode(Release.self, from: data) {
                 // Compare with current version and prompt user if an update is available
-                if releaseInfo.tag_name != self.currentVersion {
+                if self.isNewerVersion(releaseInfo.tag_name, currentVersion: self.currentVersion) {
                     DispatchQueue.main.async {
                         self.promptUserToUpdate(releaseInfo)
                     }
@@ -346,6 +346,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         task.resume()
+    }
+
+    private func isNewerVersion(_ newVersion: String, currentVersion: String) -> Bool {
+        let newVersionComponents = newVersion.split(separator: ".").map { Int($0) ?? 0 }
+        let currentVersionComponents = currentVersion.split(separator: ".").map { Int($0) ?? 0 }
+
+        for (new, current) in zip(newVersionComponents, currentVersionComponents) {
+            if new > current {
+                return true
+            } else if new < current {
+                return false
+            }
+        }
+        return newVersionComponents.count > currentVersionComponents.count
     }
 
     private func promptUserToUpdate(_ releaseInfo: Release) {
