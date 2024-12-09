@@ -82,11 +82,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Register for ClickToHideStateChanged notifications
         NotificationCenter.default.addObserver(self, selector: #selector(updateClickToHideState(_:)), name: NSNotification.Name("ClickToHideStateChanged"), object: nil)
 
-        // Start observing Dock changes
+        // Start observing Dock changes, must listen on both didActivate and didDeactivate to prevent fullscreen app triggering the tap.
         let center = NSWorkspace.shared.notificationCenter
         center.addObserver(self, selector: #selector(dockChanged), name: NSWorkspace.didLaunchApplicationNotification, object: nil)
         center.addObserver(self, selector: #selector(dockChanged), name: NSWorkspace.didActivateApplicationNotification, object: nil)
         center.addObserver(self, selector: #selector(dockChanged), name: NSWorkspace.didTerminateApplicationNotification, object: nil)
+        center.addObserver(self, selector: #selector(dockChanged), name: NSWorkspace.didDeactivateApplicationNotification, object: nil)
 
         registerLoginItem() // Register the helper application as a login item
         setupAppDict()
