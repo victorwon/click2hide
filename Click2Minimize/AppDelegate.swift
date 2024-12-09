@@ -175,8 +175,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     static func eventTapCallback(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent?, appDelegate: AppDelegate) -> Unmanaged<CGEvent>? {
         guard let event = event else { return nil }
-        // Skip if not enabled or during change
-        if !appDelegate.isClickToHideEnabled || !appDelegate.canProcessEventTap {
+        
+        // Skip if not enabled, during change, or if the active application is in fullscreen
+        if !appDelegate.isClickToHideEnabled || !appDelegate.canProcessEventTap || appDelegate.isActiveAppFullscreen() {
             return Unmanaged.passUnretained(event) // Allow the event to pass through
         }
         
@@ -197,7 +198,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 if let app = runningApps.first(where: { $0.localizedName == dockItem.appID
                     || $0.localizedName == appDelegate.appDict[dockItem.appID] }) {
                     print("App isHidden: \(app.isHidden), isActive: \(app.isActive)")
-                    // when app is just minmized without switching focus, it's hidden but still active
+                    // when app is just minimized without switching focus, it's hidden but still active
                     // there is no simple way to differentiate but good news is next click will work
                     if !app.isActive || app.isHidden {
                         // Use launch as app.activate() is not reliable and can't unminimize
@@ -220,7 +221,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         return shouldSuppressEvent ? nil : Unmanaged.passUnretained(event)
+    }
+
+    private func isActiveAppFullscreen() -> Bool {
+        // Get the list of windows for the active application
+        let windows = NSApplication.shared.windows.filter { $0.isVisible && $0.isKeyWindow }
+        print(NSApplication.shared.windows.count)
+        // Check if any window is in fullscreen mode
+        for window in windows {
+            if window.styleMask.contains(.fullSizeContentView) {
+                return true
+            }
+        }
         
+        return false
     }
 
     // Define a struct to hold the dock item information
