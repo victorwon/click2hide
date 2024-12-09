@@ -45,8 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var appDict: [String: String] = [:]
     var currentVersion: String = "" // Add this line to define currentVersion
     private var debounceTimer: Timer?
-    private var canProcessEventTap: Bool = true // Flag to control event tap processing
-    
+     
     @objc func quitApp() {
         NSApplication.shared.terminate(self)
     }
@@ -104,17 +103,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func dockChanged(notification: Notification) {
         // Update dock items whenever a relevant event occurs
-// print("-- Notification: \(notification)")
-        
-        // Check if the notification is for active space change
-        if notification.name == NSWorkspace.activeSpaceDidChangeNotification {
-            canProcessEventTap = false // Disable event tap processing
-            // Reset the flag after 2 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                self.canProcessEventTap = true
-            }
-        }
-        
         updateDockItems()
     }
 
@@ -177,7 +165,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard let event = event else { return nil }
         
         // Skip if not enabled, during change, or if the active application is in fullscreen
-        if !appDelegate.isClickToHideEnabled || !appDelegate.canProcessEventTap || appDelegate.isActiveAppFullscreen() {
+        if !appDelegate.isClickToHideEnabled || appDelegate.isActiveAppFullscreen() {
             return Unmanaged.passUnretained(event) // Allow the event to pass through
         }
         
@@ -226,7 +214,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func isActiveAppFullscreen() -> Bool {
         // Get the list of windows for the active application
         let windows = NSApplication.shared.windows.filter { $0.isVisible && $0.isKeyWindow }
-        print(NSApplication.shared.windows.count)
+        
         // Check if any window is in fullscreen mode
         for window in windows {
             if window.styleMask.contains(.fullSizeContentView) {
