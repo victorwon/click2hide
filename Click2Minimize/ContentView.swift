@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var isClickToHideEnabled: Bool = UserDefaults.standard.bool(forKey: "ClickToHideEnabled")
-
+    
     var body: some View {
         VStack(spacing: 2) {
             Toggle("Enable Click2Hide", isOn: $isClickToHideEnabled)

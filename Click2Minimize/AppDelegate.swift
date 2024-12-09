@@ -27,9 +27,10 @@ struct Click2MinimizeApp: App {
     }
 
     init() {
-        // Retrieve the current version from Info.plist
-        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-            appDelegate.currentVersion = version
+        // Retrieve the current version and build number from Info.plist
+        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+           let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+            appDelegate.currentVersion = "\(version).\(build)" // Combine version and build number
         }
         appDelegate.checkForUpdates()
     }
@@ -55,7 +56,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let contentView = ContentView()
             let hostingController = NSHostingController(rootView: contentView)
             let window = NSWindow(contentViewController: hostingController)
-            window.title = "Settings"
+            window.title = "Version \(currentVersion)"
             window.styleMask = [.titled, .closable]
             window.center()
             window.makeKeyAndOrderFront(nil)
