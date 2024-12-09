@@ -2,13 +2,19 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.presentationMode) var presentationMode
-    @State private var isClickToHideEnabled: Bool = UserDefaults.standard.bool(forKey: "ClickToHideEnabled")
+    @State private var isClickToHideEnabled: Bool = {
+        if UserDefaults.standard.object(forKey: "ClickToHideEnabled") == nil {
+            UserDefaults.standard.set(true, forKey: "ClickToHideEnabled") // Set default value
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "ClickToHideEnabled")
+    }()
     
     var body: some View {
         VStack(spacing: 2) {
             Toggle("Enable Click2Hide", isOn: $isClickToHideEnabled)
                 .padding()
-                .toggleStyle(SwitchToggleStyle(tint: .blue))
+                // .toggleStyle(SwitchToggleStyle(tint: .blue)) // this breaks intel mac
                 .onChange(of: isClickToHideEnabled) { newValue in
                     UserDefaults.standard.set(newValue, forKey: "ClickToHideEnabled")
                     NotificationCenter.default.post(name: NSNotification.Name("ClickToHideStateChanged"), object: newValue)
@@ -24,3 +30,4 @@ struct ContentView: View {
 
     }
 }
+

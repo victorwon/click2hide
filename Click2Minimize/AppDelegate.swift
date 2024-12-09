@@ -44,6 +44,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var isClickToHideEnabled: Bool = UserDefaults.standard.bool(forKey: "ClickToHideEnabled") // Load initial state
     var appDict: [String: String] = [:]
     var currentVersion: String = "" // Add this line to define currentVersion
+    private var debounceTimer: Timer?
+    private var canProcessEventTap: Bool = true // Flag to control event tap processing
     
     @objc func quitApp() {
         NSApplication.shared.terminate(self)
@@ -83,12 +85,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Register for ClickToHideStateChanged notifications
         NotificationCenter.default.addObserver(self, selector: #selector(updateClickToHideState(_:)), name: NSNotification.Name("ClickToHideStateChanged"), object: nil)
 
-        // Start observing Dock changes, must listen on both didActivate and didDeactivate to prevent fullscreen app triggering the tap.
+        // Start observing Dock changes.
         let center = NSWorkspace.shared.notificationCenter
         center.addObserver(self, selector: #selector(dockChanged), name: NSWorkspace.didLaunchApplicationNotification, object: nil)
         center.addObserver(self, selector: #selector(dockChanged), name: NSWorkspace.didActivateApplicationNotification, object: nil)
         center.addObserver(self, selector: #selector(dockChanged), name: NSWorkspace.didTerminateApplicationNotification, object: nil)
-        center.addObserver(self, selector: #selector(dockChanged), name: NSWorkspace.didDeactivateApplicationNotification, object: nil)
+        center.addObserver(self, selector: #selector(dockChanged), name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
 
         registerLoginItem() // Register the helper application as a login item
         setupAppDict()
@@ -102,19 +104,39 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func dockChanged(notification: Notification) {
         // Update dock items whenever a relevant event occurs
+// print("-- Notification: \(notification)")
+        
+        // Check if the notification is for active space change
+        if notification.name == NSWorkspace.activeSpaceDidChangeNotification {
+            canProcessEventTap = false // Disable event tap processing
+            // Reset the flag after 2 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                self.canProcessEventTap = true
+            }
+        }
+        
         updateDockItems()
     }
 
     @objc func updateDockItems() {
+        // Check if the debounce timer is already running
+        if debounceTimer == nil {
+            // Create a new timer that will reset the debounce period
+            debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
+                self?.debounceTimer = nil // Reset the timer
+            }
+            
+            // Perform the update immediately
+            performDockUpdate()
+        }
+    }
+
+    private func performDockUpdate() {
         // Call getDockRects() to update the global dockItems variable
         getDockRects().sink { dockItems in
-            // Update the global variable
-            if let dockItems = dockItems {
-                self.dockItems = dockItems
-            } else {
-                self.dockItems = []
-            }
+            self.dockItems = dockItems ?? []
         }.store(in: &cancellables)
+        print("-- performDockUpdate --")
     }
 
     func setupAppDict() {
@@ -153,8 +175,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     static func eventTapCallback(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent?, appDelegate: AppDelegate) -> Unmanaged<CGEvent>? {
         guard let event = event else { return nil }
-        // Check if click to hide is enabled before suppressing the event
-        if !appDelegate.isClickToHideEnabled {
+        // Skip if not enabled or during change
+        if !appDelegate.isClickToHideEnabled || !appDelegate.canProcessEventTap {
             return Unmanaged.passUnretained(event) // Allow the event to pass through
         }
         
@@ -408,6 +430,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let task = URLSession.shared.downloadTask(with: url) { localURL, response, error in
             guard let localURL = localURL, error == nil else {
                 print("Error downloading DMG: \(error?.localizedDescription ?? "Unknown error")")
+                // Open the browser link for manual upgrade
+                self.openBrowserForManualUpgrade()
                 return
             }
             
@@ -432,6 +456,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         print("Successfully installed Click2Hide to /Applications.")
                     } catch {
                         print("Error copying app to /Applications: \(error.localizedDescription)")
+                        // Open the browser link for manual upgrade
+                        self.openBrowserForManualUpgrade()
                     }
 
                     // Unmount the DMG
@@ -442,6 +468,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     unmountTask.waitUntilExit()
                 } else {
                     print("Failed to mount DMG.")
+                    // Open the browser link for manual upgrade
+                    self.openBrowserForManualUpgrade()
                 }
             }
             
@@ -450,7 +478,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         task.resume()
     }
 
+    private func openBrowserForManualUpgrade() {
+        if let url = URL(string: "https://github.com/victorwon/click2hide/releases") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
     struct Release: Codable {
         let tag_name: String
     }
 }
+

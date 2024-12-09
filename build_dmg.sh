@@ -11,7 +11,7 @@ TEMP_DIR="temp_dmg_contents" # Temporary directory for DMG contents
 mkdir -p build
 
 # Build the app using xcodebuild
-xcodebuild -scheme "$APP_NAME" -configuration Release -derivedDataPath build
+xcodebuild -scheme "$APP_NAME" -configuration Release -derivedDataPath build ARCHS="arm64 x86_64"
 
 # Check if the build was successful
 if [ ! -d "$APP_PATH" ]; then
