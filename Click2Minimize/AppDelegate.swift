@@ -373,11 +373,80 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
-            // Open the GitHub release page
-            if let url = URL(string: "https://github.com/victorwon/click2hide/releases") {
-                NSWorkspace.shared.open(url)
+            // Fetch the latest DMG URL from the release info
+            fetchLatestDMG(releaseInfo: releaseInfo)
+        }
+    }
+
+    private func fetchLatestDMG(releaseInfo: Release) {
+        let url = URL(string: "https://api.github.com/repos/victorwon/click2hide/releases/latest")!
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                print("Error fetching release info: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+               let assets = json["assets"] as? [[String: Any]] {
+                for asset in assets {
+                    if let downloadURL = asset["browser_download_url"] as? String,
+                       let name = asset["name"] as? String,
+                       name.hasSuffix(".dmg") {
+                        self.downloadDMG(from: downloadURL)
+                        break
+                    }
+                }
             }
         }
+        task.resume()
+    }
+
+    private func downloadDMG(from urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        
+        let task = URLSession.shared.downloadTask(with: url) { localURL, response, error in
+            guard let localURL = localURL, error == nil else {
+                print("Error downloading DMG: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            // Mount the DMG
+            let mountTask = Process()
+            mountTask.launchPath = "/usr/bin/hdiutil"
+            mountTask.arguments = ["attach", localURL.path]
+
+            mountTask.terminationHandler = { process in
+                if process.terminationStatus == 0 {
+                    // Get the mounted volume path
+                    let mountedVolumePath = "/Volumes/Click2Hide" // Adjust this if the volume name is different
+                    let appDestinationURL = URL(fileURLWithPath: "/Applications/Click2Hide.app") // Change to /Applications
+
+                    do {
+                        // Copy the app to the /Applications folder
+                        let appSourceURL = URL(fileURLWithPath: "\(mountedVolumePath)/Click2Hide.app") // Adjust if necessary
+                        if FileManager.default.fileExists(atPath: appDestinationURL.path) {
+                            try FileManager.default.removeItem(at: appDestinationURL) // Remove old version if it exists
+                        }
+                        try FileManager.default.copyItem(at: appSourceURL, to: appDestinationURL)
+                        print("Successfully installed Click2Hide to /Applications.")
+                    } catch {
+                        print("Error copying app to /Applications: \(error.localizedDescription)")
+                    }
+
+                    // Unmount the DMG
+                    let unmountTask = Process()
+                    unmountTask.launchPath = "/usr/bin/hdiutil"
+                    unmountTask.arguments = ["detach", mountedVolumePath]
+                    unmountTask.launch()
+                    unmountTask.waitUntilExit()
+                } else {
+                    print("Failed to mount DMG.")
+                }
+            }
+            
+            mountTask.launch()
+        }
+        task.resume()
     }
 
     struct Release: Codable {
