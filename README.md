@@ -12,7 +12,7 @@ No more hunting for hidden windows on your Mac. **Click2Hide** automatically hid
 
 1. Download the latest version of Click2Hide.dmg from the [Releases](https://github.com/victorwon/click2hide/releases) page.
 2. Open the dmg file, drag and drop the Click2Hide.app to the Applications folder.
-3. Now you can open the Click2Hide.app from the Applications folder and follow the steps to get through the gatekeeper on MacOS Sequoia. This is a one-time process and on MacOS Ventura and Sonoma, only the last 2 steps are required. Also, this is opensource app, so you can verify the code yourself in case of any security concerns.
+3. You may now open the Click2Hide.app from the Applications folder and follow the steps to bypass the gatekeeper on MacOS Sequoia. This is a one-time procedure. For MacOS Ventura and Sonoma, only the last two steps are necessary. Additionally, this is an open-source application. Therefore, in the event of any security concerns, you may verify the code to ease your mind.
    - ![Step 1](assets/Step1.jpeg)
    - ![Step 2](assets/Step2.jpeg)
    - ![Step 3](assets/Step3.jpeg)
