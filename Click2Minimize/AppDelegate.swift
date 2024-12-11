@@ -339,7 +339,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if response == .alertFirstButtonReturn {
             openAccessibilityPreferences()
             // Quit the application as it won't work without permission
-            NSApplication.shared.terminate(nil)
+            // Delay termination by 1 second
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                NSApplication.shared.terminate(nil)
+            }
         }
     }
 
@@ -503,8 +506,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             NSWorkspace.shared.launchApplication("/Applications/Click2Hide.app")
         }
         
-        // Quit the application
-        NSApplication.shared.terminate(nil)
+        // Delay termination by 1 second
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            NSApplication.shared.terminate(nil)
+        }
     }
 
     struct Release: Codable {
