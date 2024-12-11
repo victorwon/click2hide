@@ -41,7 +41,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var mainWindow: NSWindow?
     var cancellables = Set<AnyCancellable>()
     var dockItems: [DockItem] = [] // Global variable to hold dock item rectangles
-    private var isClickToHideEnabled: Bool = UserDefaults.standard.bool(forKey: "ClickToHideEnabled") // Load initial state
+    private var isClickToHideEnabled: Bool = { // Set isClickToHideEnabled to true if not found
+        if UserDefaults.standard.object(forKey: "ClickToHideEnabled") == nil {
+            UserDefaults.standard.set(true, forKey: "ClickToHideEnabled") // Set default value
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "ClickToHideEnabled")
+    }() 
     var appDict: [String: String] = [:]
     var currentVersion: String = "" // Add this line to define currentVersion
     private var debounceTimer: Timer?
@@ -305,14 +311,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if isClickToHideEnabled {
-            NSApp.hide(nil)
-            return true
-        }
-        return false
-    }
-
     @objc func updateClickToHideState(_ notification: Notification) {
         if let enabled = notification.object as? Bool {
             isClickToHideEnabled = enabled
@@ -490,4 +488,3 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let tag_name: String
     }
 }
-

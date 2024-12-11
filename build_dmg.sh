@@ -5,7 +5,8 @@ APP_NAME="Click2Hide"
 APP_PATH="build/Build/Products/Release/$APP_NAME.app"
 DMG_NAME="$APP_NAME.dmg"
 DMG_PATH="dist/$DMG_NAME"
-TEMP_DIR="temp_dmg_contents" # Temporary directory for DMG contents
+TEMP_DIR="temp_dmg_contents"                                     # Temporary directory for DMG contents
+CODE_SIGN_IDENTITY="Apple Development: Victor Weng (SBQKADNQZW)" # Replace with your code signing identity
 
 # Create the build directory if it doesn't exist
 mkdir -p build
@@ -21,6 +22,15 @@ xcodebuild -scheme "$APP_NAME" -configuration Release -derivedDataPath build \
 # Check if the build was successful
 if [ ! -d "$APP_PATH" ]; then
   echo "Build failed. Exiting."
+  exit 1
+fi
+
+# Code sign the app
+codesign --deep --force --verify --verbose --sign "$CODE_SIGN_IDENTITY" "$APP_PATH"
+
+# Check if the code signing was successful
+if [ $? -ne 0 ]; then
+  echo "Code signing failed. Exiting."
   exit 1
 fi
 
