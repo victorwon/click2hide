@@ -454,6 +454,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         }
                         try FileManager.default.copyItem(at: appSourceURL, to: appDestinationURL)
                         print("Successfully installed Click2Hide to /Applications.")
+                        
+                        // Prompt the user to relaunch the app
+                        DispatchQueue.main.async {
+                            self.promptUserToRelaunch()
+                        }
+                        
                     } catch {
                         print("Error copying app to /Applications: \(error.localizedDescription)")
                         // Open the browser link for manual upgrade
@@ -482,6 +488,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let url = URL(string: "https://github.com/victorwon/click2hide/releases") {
             NSWorkspace.shared.open(url)
         }
+    }
+
+    private func promptUserToRelaunch() {
+        let alert = NSAlert()
+        alert.messageText = "Update Successful"
+        alert.informativeText = "The application has been successfully updated."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Relaunch")
+
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            // Relaunch the app
+            NSWorkspace.shared.launchApplication("/Applications/Click2Hide.app")
+        }
+        
+        // Quit the application
+        NSApplication.shared.terminate(nil)
     }
 
     struct Release: Codable {
