@@ -1,6 +1,6 @@
 # Click2Hide
 
-![Click2Hide Logo](Click2Minimize/Assets.xcassets/AppIcon.appiconset/128-mac.png)
+![Click2Hide Logo](Click2Hide/Assets.xcassets/AppIcon.appiconset/128-mac.png)
 
 ## Overview
 

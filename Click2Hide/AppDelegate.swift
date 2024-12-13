@@ -7,7 +7,7 @@ import ServiceManagement
 import Foundation
 
 @main // This indicates that this is the entry point of the application
-struct Click2MinimizeApp: App {
+struct Click2HideApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
